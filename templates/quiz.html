@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.Title}}</title>
+    <style>
+        .correct { color: green; }
+        .incorrect { color: red; }
+    </style>
+</head>
+<body>
+    <h1>{{.Title}}</h1>
+    <form id="quiz-form">
+        {{range $index, $question := .Questions}}
+        <fieldset>
+            <legend>Q{{add $index 1}}. {{.Text}}</legend>
+            {{if eq .Type "single"}}
+            {{range $i, $option := .Options}}
+            <input type="radio" name="q{{$index}}" value="{{$i}}"> {{$option}}<br>
+            {{end}}
+            {{else if eq .Type "multiple"}}
+            {{range $i, $option := .Options}}
+            <input type="checkbox" name="q{{$index}}" value="{{$i}}"> {{$option}}<br>
+            {{end}}
+            {{end}}
+        </fieldset>
+        {{end}}
+        <button type="button" onclick="checkAnswers()">Submit</button>
+    </form>
+    <div id="result"></div>
+    <button onclick="location.href='/'">Home</button>
+    <script>
+        function checkAnswers() {
+            const form = document.getElementById('quiz-form');
+            const resultDiv = document.getElementById('result');
+            var resultHTML = '';
+            {{range $index, $question := .Questions}}
+            var correctAnswers = [{{range $i, $answer := .Answers}}{{if $i}}, {{end}}{{$answer}}{{end}}];
+            var userAnswers = [];
+            {{if eq .Type "single"}}
+            var selectedOption = form['q{{$index}}'].value;
+            if (correctAnswers.includes(parseInt(selectedOption))) {
+                resultHTML += '<p>Q{{add $index 1}}: <span class="correct">Correct</span></p>';
+            } else {
+                resultHTML += '<p>Q{{add $index 1}}: <span class="incorrect">Incorrect</span></p>';
+            }
+            {{else if eq .Type "multiple"}}
+            var checkboxes = form['q{{$index}}'];
+            if (checkboxes.length === undefined) {
+                checkboxes = [checkboxes];
+            }
+            for (var i = 0; i < checkboxes.length; i++) {
+                if (checkboxes[i].checked) {
+                    userAnswers.push(parseInt(checkboxes[i].value));
+                }
+            }
+            var correct = true;
+            for (var i = 0; i < correctAnswers.length; i++) {
+                if (!userAnswers.includes(correctAnswers[i])) {
+                    correct = false;
+                    break;
+                }
+            }
+            for (var i = 0; i < userAnswers.length; i++) {
+                if (!correctAnswers.includes(userAnswers[i])) {
+                    correct = false;
+                    break;
+                }
+            }
+            if (correct) {
+                resultHTML += '<p>Q{{add $index 1}}: <span class="correct">Correct</span></p>';
+            } else {
+                resultHTML += '<p>Q{{add $index 1}}: <span class="incorrect">Incorrect</span></p>';
+            }
+            {{end}}
+            {{end}}
+            resultDiv.innerHTML = resultHTML;
+        }
+    </script>
+</body>
+</html>
