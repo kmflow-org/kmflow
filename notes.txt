@@ -1,8 +1,20 @@
-sudo mkdir -p /opt/kmflow/quizengine
+# Working Userdata
+
+#! /bin/bash -ex
+
+# Confirm ssm-user exists
+echo "Waiting for ssm-user to be created by SSM agent..."
+while ! id "ssm-user" &>/dev/null; do
+  sleep 5
+done
+echo "ssm-user is now available."
+
+mkdir -p /opt/kmflow/quizengine
+chown ssm-user:ssm-user /opt/kmflow/quizengine
+cd /opt/kmflow/quizengine
+aws s3 cp s3://kmflow-org-artifacts/release-v1.tar.gz .
 tar -xf release-v1.tar.gz --strip-components=1
-
-sudo vi /etc/systemd/system/quizengine.service
-
+sudo cat > /etc/systemd/system/quizengine.service <<EOF
 [Unit]
 Description=Quiz Engine Service
 After=network.target
@@ -18,11 +30,8 @@ WorkingDirectory=/opt/kmflow/quizengine
 
 [Install]
 WantedBy=multi-user.target
-
+EOF
+chown ssm-user:ssm-user /opt/kmflow/quizengine
 sudo systemctl daemon-reload
 sudo systemctl enable quizengine
 sudo systemctl start quizengine
-sudo systemctl status quizengine
-
-
-
