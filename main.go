@@ -12,7 +12,6 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -193,20 +192,15 @@ func isPrime(n int) bool {
 
 // cpuIntensiveTask performs a CPU-intensive task.
 func cpuIntensiveTask() {
-	const max = 60000000
-	primes := []int{}
+	const max = 9000000
 	for i := 2; i < max; i++ {
-		if isPrime(i) {
-			primes = append(primes, i)
-		}
+		isPrime(i)
 	}
 }
 
 func cpuintensiveHandler(w http.ResponseWriter, r *http.Request) {
-	start := time.Now()
-	cpuIntensiveTask()
-	duration := time.Since(start)
-	fmt.Fprintf(w, "CPU-intensive task completed in %v\n", duration)
+	go cpuIntensiveTask()
+	fmt.Fprintf(w, "CPU-intensive task accepted")
 }
 
 func serverConfigHandler(w http.ResponseWriter, r *http.Request) {
