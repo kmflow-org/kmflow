@@ -16,7 +16,7 @@ questions:
     answers:
       - 0
       - 1
-  - text: Why is it best practise to create a separate user to run a bunary as a service?
+  - text: Why is it best practise to create a separate user to run a binary as a service?
     type: single
     options:
       - To limit access to just the needed files and folders
@@ -46,7 +46,7 @@ questions:
     answers:
       - 4
   - text: Which of the following is true about Auto Scaling Groups?
-    type: multiple
+    type: single
     options:
       - You can have ALB -> TG -> ASG -> Group of instances
       - Automatically adjusts the number of EC2 instances based on demand
