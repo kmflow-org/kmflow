@@ -12,4 +12,4 @@ cp -r templates release
 cp config.yaml release
 mv quizengine release
 tar -czvf release-$1.tar.gz release
-aws s3 cp release-$1.tar.gz s3://kmflow-org-artifacts/  --profile kmflow --region us-west-2
+aws s3 cp release-$1.tar.gz s3://kmflow-org-artifacts/  --profile kmflowdev --region us-west-2

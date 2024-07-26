@@ -20,6 +20,8 @@ resource "aws_subnet" "public" {
   map_public_ip_on_launch = true
   tags = {
     Name = "${var.vpc_name}-pub-${element(var.availability_zones, count.index)}"
+    type = "public"
+    env = var.env
   }
 }
 
@@ -30,11 +32,13 @@ resource "aws_subnet" "private" {
   availability_zone       = element(var.availability_zones, count.index)
   tags = {
     Name = "${var.vpc_name}-pvt-${element(var.availability_zones, count.index)}"
+    type = "private"
+    env = var.env
   }
 }
 
 resource "aws_eip" "nat" {
-  vpc = true
+  domain   = "vpc"
   tags = {
     Name = "${var.vpc_name}-nat"
   }
