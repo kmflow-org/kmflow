@@ -32,7 +32,7 @@ questions:
       - I still need the VPC endpoint
       - Then I don't really need a VPC endpoint to access an AWS service
     answers:
-      - 0
+      - 1
   - text: You can connect to an EC2 private instance without using SSH
     type: single
     options:
