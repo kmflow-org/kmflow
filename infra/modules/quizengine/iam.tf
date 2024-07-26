@@ -39,7 +39,9 @@ resource "aws_iam_role_policy" "s3_access" {
         ]
         Resource = [
           "arn:aws:s3:::kmflow-org-artifacts",
-          "arn:aws:s3:::kmflow-org-artifacts/*"
+          "arn:aws:s3:::kmflow-org-artifacts/*",
+          "arn:aws:s3:::kmflow-org-quizzes",
+          "arn:aws:s3:::kmflow-org-quizzes/*"
         ]
       }
     ]

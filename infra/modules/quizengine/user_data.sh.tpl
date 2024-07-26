@@ -5,7 +5,7 @@ mkdir -p /opt/kmflow/quizengine
 
 cd /opt/kmflow/quizengine
 aws s3 cp s3://kmflow-org-artifacts/${release_version}.tar.gz .
-tar -xf release-v1.tar.gz --strip-components=1
+tar -xf ${release_version}.tar.gz --strip-components=1
 
 cat > /etc/systemd/system/quizengine.service <<EOF
 [Unit]

@@ -14,6 +14,6 @@ module "quizengine" {
   prefix = "quizengine"
   env = "dev"
   vpc_id = module.vpc.vpc_id
-  acm_certificate_arn = "arn:aws:acm:us-west-2:533675705859:certificate/859d7444-67cc-4bfb-b6ac-00397e0c3556"
-  release_version = "release-v1"
+  acm_certificate_arn = "arn:aws:acm:us-west-2:533675705859:certificate/fd408cf8-40d2-400f-b44d-1509069e18da"
+  release_version = "release-v2"
 }

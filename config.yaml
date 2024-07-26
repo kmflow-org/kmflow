@@ -1,1 +1,3 @@
-readFromS3: false
+readFromS3: true
+s3bucket: kmflow-org-quizzes
+region: us-west-2
