@@ -7,7 +7,7 @@ cd /opt/kmflow/quizengine
 aws s3 cp s3://kmflow-org-artifacts/release-v1.tar.gz .
 tar -xf release-v1.tar.gz --strip-components=1
 
-sudo cat > /etc/systemd/system/quizengine.service <<EOF
+cat > /etc/systemd/system/quizengine.service <<EOF
 [Unit]
 Description=Quiz Engine Service
 After=network.target
@@ -25,6 +25,6 @@ EOF
 
 chown -R quizengine-user:quizengine-user /opt/kmflow/quizengine
 
-sudo systemctl daemon-reload
-sudo systemctl enable quizengine
-sudo systemctl start quizengine
+systemctl daemon-reload
+systemctl enable quizengine
+systemctl start quizengine
