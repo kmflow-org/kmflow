@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -41,6 +42,7 @@ type Question struct {
 var config Config
 var quizzes []Quiz
 var tmpl *template.Template
+var mutex sync.Mutex
 
 // Custom function to add two integers
 func add(a, b int) int {
@@ -76,6 +78,7 @@ func loadQuizzesFromS3() {
 		log.Fatalf("Unable to list items in bucket %q, %v", config.S3Bucket, err)
 	}
 
+	var newQuizzes []Quiz
 	for _, item := range result.Contents {
 		getObjectInput := &s3.GetObjectInput{
 			Bucket: aws.String(config.S3Bucket),
@@ -96,8 +99,11 @@ func loadQuizzesFromS3() {
 		if err != nil {
 			log.Fatalf("Failed to unmarshal quiz YAML: %v", err)
 		}
-		quizzes = append(quizzes, quiz)
+		newQuizzes = append(newQuizzes, quiz)
 	}
+	mutex.Lock()
+	quizzes = newQuizzes
+	mutex.Unlock()
 }
 
 func loadQuizzesFromFileSystem() {
@@ -106,6 +112,7 @@ func loadQuizzesFromFileSystem() {
 		log.Fatalf("Failed to read quizzes directory: %v", err)
 	}
 
+	var newQuizzes []Quiz
 	for _, file := range files {
 		filePath := filepath.Join("./quizzes", file.Name())
 		data, err := os.ReadFile(filePath)
@@ -118,11 +125,15 @@ func loadQuizzesFromFileSystem() {
 		if err != nil {
 			log.Fatalf("Failed to unmarshal quiz YAML: %v", err)
 		}
-		quizzes = append(quizzes, quiz)
+		newQuizzes = append(newQuizzes, quiz)
 	}
+	mutex.Lock()
+	quizzes = newQuizzes
+	mutex.Unlock()
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
+	reloadQuizzes()
 	tmpl := template.Must(template.New("index.html").Funcs(template.FuncMap{
 		"add": add,
 	}).ParseFiles("templates/index.html"))
@@ -233,14 +244,16 @@ func serverConfigHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "\nConfig File:\n%s\n", configData)
 }
 
-func main() {
-	loadConfig()
+func reloadQuizzes() {
 	if config.ReadFromS3 {
 		loadQuizzesFromS3()
 	} else {
 		loadQuizzesFromFileSystem()
 	}
+}
 
+func main() {
+	loadConfig()
 	tmpl = template.Must(template.New("").Funcs(template.FuncMap{
 		"add": add,
 	}).ParseFiles("templates/index.html", "templates/quiz.html"))
