@@ -157,6 +157,11 @@ resource "aws_autoscaling_group" "quizengine-asg" {
     value               = "${local.name_prefix}-asg"
     propagate_at_launch = true
   }
+  tag {
+    key                 = "env"
+    value               = var.env
+    propagate_at_launch = true
+  }
 }
 
 resource "aws_autoscaling_policy" "target_tracking" {
