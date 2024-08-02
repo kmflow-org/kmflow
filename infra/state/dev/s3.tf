@@ -5,4 +5,5 @@ provider "aws" {
 
 resource "aws_s3_bucket" "state" {
   bucket = "kmflow-infra-state"
+  force_destroy = true
 }
