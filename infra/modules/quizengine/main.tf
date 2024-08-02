@@ -171,3 +171,16 @@ resource "aws_autoscaling_policy" "target_tracking" {
     target_value = 40.0
   }
 }
+
+resource "aws_route53_record" "kmfloworg" {
+  zone_id         = data.aws_route53_zone.kmflow.zone_id
+  allow_overwrite = true
+  name = "kmflow.org"
+  type = "A"
+
+  alias {
+    name = aws_lb.quizengine-alb.dns_name
+    zone_id = aws_lb.quizengine-alb.zone_id
+    evaluate_target_health = true
+  }
+}
