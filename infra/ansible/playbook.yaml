@@ -1,0 +1,61 @@
+---
+- name: Ansible Test Playbook
+  gather_facts: false
+  become: false
+  hosts: env_dev
+  vars:
+   ansible_connection: aws_ssm
+   ansible_aws_ssm_region: us-west-2
+   ansible_aws_ssm_profile: kmflowdev
+   ansible_aws_ssm_bucket_name: kmflow-infra-state
+  tasks:
+    - name: Ensure boto and boto3 modules are installed
+      become: true
+      pip:
+        name: "{{ item }}"
+      with_items:
+        - boto3
+        - botocore
+    - name: Get object from s3
+      become: true
+      amazon.aws.s3_object:
+        bucket: kmflow-org-artifacts
+        object: "{{release_version}}.tar.gz"
+        dest: /opt/kmflow/quizengine/release.tar.gz
+        mode: get
+    - name: Extract release.tar.gz into /opt/kmflow/quizengine/
+      become: true
+      ansible.builtin.unarchive:
+        remote_src: true
+        src: /opt/kmflow/quizengine/release.tar.gz
+        dest: /opt/kmflow/quizengine/
+        extra_opts:
+          - --strip-components=1
+    - name: configure quizengine
+      become: true
+      ansible.builtin.template:
+        src: ./templates/config.yaml.j2
+        dest: /opt/kmflow/quizengine/config.yaml
+      tags:
+      - config
+    - name: configure quizengine daemon
+      become: true
+      ansible.builtin.template:
+        src: ./templates/quizengine.service.j2
+        dest: /etc/systemd/system/quizengine.service
+    - name: Just force systemd to reread configs
+      become: true
+      ansible.builtin.systemd_service:
+        daemon_reload: true
+    - name: Enable quizengine service
+      become: true
+      ansible.builtin.systemd_service:
+        name: quizengine
+        enabled: true
+    - name: Start quizengine service
+      become: true
+      ansible.builtin.systemd_service:
+        name: quizengine
+        state: restarted
+      tags:
+      - config
