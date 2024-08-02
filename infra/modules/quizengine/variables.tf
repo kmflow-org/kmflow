@@ -10,10 +10,6 @@ variable "vpc_id" {
     type = string
 }
 
-variable "acm_certificate_arn" {
-    type = string
-}
-
 variable "release_version" {
   type        = string
 }

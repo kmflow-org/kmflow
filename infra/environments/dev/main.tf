@@ -16,6 +16,5 @@ module "quizengine" {
   vpc_id = module.vpc.vpc_id
   public_subnet_ids = module.vpc.public_subnet_ids
   private_subnet_ids = module.vpc.private_subnet_ids
-  acm_certificate_arn = "Paste your own cert arn here"
   release_version = "release-v1"
 }
