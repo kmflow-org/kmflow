@@ -44,39 +44,13 @@ resource "aws_security_group" "instance_sg" {
   }
 }
 
-
-# Data source to fetch public subnets
-data "aws_subnets" "public" {
-  filter {
-    name   = "tag:type"
-    values = ["public"]
-  }
-  filter {
-    name   = "tag:env"
-    values = [var.env]
-  }
-}
-
-# Data source to fetch private subnets
-data "aws_subnets" "private" {
-  filter {
-    name   = "tag:type"
-    values = ["private"]
-  }
-  filter {
-    name   = "tag:env"
-    values = [var.env]
-  }
-}
-
-
 # Create the ALB
 resource "aws_lb" "quizengine-alb" {
   name               = "${local.name_prefix}-alb"
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.alb_sg.id]
-  subnets            = data.aws_subnets.public.ids
+  subnets            = var.public_subnet_ids
 
   enable_deletion_protection = false
 }
@@ -105,7 +79,7 @@ resource "aws_lb_listener" "quizengine-lstnr" {
   protocol          = "HTTPS"
 
   ssl_policy        = "ELBSecurityPolicy-TLS13-1-2-2021-06"
-  certificate_arn   = var.acm_certificate_arn
+  certificate_arn   = aws_acm_certificate_validation.kmflow.certificate_arn
 
   default_action {
     type             = "forward"
@@ -166,7 +140,7 @@ resource "aws_autoscaling_group" "quizengine-asg" {
   desired_capacity     = 1
   max_size             = 5
   min_size             = 1
-  vpc_zone_identifier  = data.aws_subnets.private.ids
+  vpc_zone_identifier  = var.private_subnet_ids
   launch_template {
     id      = aws_launch_template.quizengine-lt.id
     version = "$Latest"
