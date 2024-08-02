@@ -1,0 +1,13 @@
+[Unit]
+Description=Quiz Engine Service
+After=network.target
+
+[Service]
+ExecStart=/opt/kmflow/quizengine/quizengine
+Restart=always
+User=quizengine-user
+Environment=PATH=/usr/bin:/usr/local/bin
+WorkingDirectory=/opt/kmflow/quizengine
+
+[Install]
+WantedBy=multi-user.target
