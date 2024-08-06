@@ -11,3 +11,4 @@ hostnames:
   - instance-id
 compose:
   ansible_host: instance_id
+  ansible_user: '"ssm-user"'

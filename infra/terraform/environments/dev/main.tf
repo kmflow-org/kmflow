@@ -9,12 +9,17 @@ module "vpc" {
   availability_zones  = var.availability_zones
 }
 
-module "quizengine" {
-  source = "../../modules/quizengine"
-  prefix = "quizengine"
-  env = "dev"
-  vpc_id = module.vpc.vpc_id
-  public_subnet_ids = module.vpc.public_subnet_ids
-  private_subnet_ids = module.vpc.private_subnet_ids
-  release_version = "release-v1"
+#module "quizengine" {
+#  source = "../../modules/quizengine"
+#  prefix = "quizengine"
+#  env = "dev"
+#  vpc_id = module.vpc.vpc_id
+#  public_subnet_ids = module.vpc.public_subnet_ids
+#  private_subnet_ids = module.vpc.private_subnet_ids
+#  release_version = "release-v1"
+#}
+
+module "iams3" {
+  source = "../../modules/basic"
 }
+
