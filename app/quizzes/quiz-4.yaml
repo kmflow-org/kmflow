@@ -1,0 +1,31 @@
+title: Workshop 2 quiz
+id: 4
+questions:
+  - text: If I don't specify an s3 backend, then?
+    type: single
+    options:
+      - Terraform will complain
+      - Terraform will store the state locally
+    answers:
+      - 0
+  - text: Terraform is declarative and not imperative?
+    type: single
+    options:
+      - True
+      - False
+    answers:
+      - 0
+  - text: Terraform knows to talk to a particular cloud because?
+    type: single
+    options:
+      - It's default behavior
+      - We use providers
+    answers:
+      - 1
+  - text: Terraform is a configuration management tool
+    type: single
+    options:
+      - Yes
+      - No
+    answers:
+      - 1

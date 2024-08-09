@@ -9,7 +9,7 @@ WORKDIR /app
 
 COPY ../../app .
 
-RUN pwd && cat go.mod && ls -lathr && go mod download
+RUN go mod download
 RUN go build -o quizengine .
 
 EXPOSE 8080
