@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"io"
@@ -37,6 +38,7 @@ type Question struct {
 	Type    string   `yaml:"type"`
 	Options []string `yaml:"options"`
 	Answers []int    `yaml:"answers"`
+	Code    string   `yaml:"code,omitempty"` // New field for code snippets
 }
 
 var config Config
@@ -148,6 +150,16 @@ func healthCheckHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "OK")
 }
 
+func toJson(v interface{}) (string, error) {
+	// Marshal the data into JSON format.
+	jsonData, err := json.Marshal(v)
+	if err != nil {
+		return "", err
+	}
+	// Convert the JSON bytes to a string and return it.
+	return string(jsonData), nil
+}
+
 func quizHandler(w http.ResponseWriter, r *http.Request) {
 	id := strings.TrimPrefix(r.URL.Path, "/quiz/")
 	quizID, err := strconv.Atoi(id)
@@ -170,11 +182,13 @@ func quizHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	tmpl := template.Must(template.New("quiz.html").Funcs(template.FuncMap{
-		"add": add,
+		"toJson": toJson,
+		"add":    add,
 	}).ParseFiles("templates/quiz.html"))
 
 	var buf bytes.Buffer
-	err = tmpl.Execute(&buf, selectedQuiz)
+	//err = tmpl.Execute(&buf, selectedQuiz)
+	tmpl.Execute(&buf, selectedQuiz)
 	if err != nil {
 		http.Error(w, "Failed to render template", http.StatusInternalServerError)
 		return
@@ -254,15 +268,13 @@ func reloadQuizzes() {
 
 func main() {
 	loadConfig()
-	tmpl = template.Must(template.New("").Funcs(template.FuncMap{
-		"add": add,
-	}).ParseFiles("templates/index.html", "templates/quiz.html"))
 
 	http.HandleFunc("/", handler)
 	http.HandleFunc("/health", healthCheckHandler)
 	http.HandleFunc("/quiz/", quizHandler)
 	http.HandleFunc("/task/cpuintensive", cpuintensiveHandler)
 	http.HandleFunc("/server/config", serverConfigHandler)
+	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 
 	log.Println("Starting server on :8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
