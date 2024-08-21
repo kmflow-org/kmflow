@@ -1,38 +1,42 @@
 // static/js/quiz.js
 
 document.addEventListener("DOMContentLoaded", function () {
-    const correctAnswers = JSON.parse(document.getElementById("correctAnswers").textContent);
-
     document.getElementById("submitQuiz").addEventListener("click", function () {
-        checkAnswers();
+        submitQuiz();
     });
 
-    function checkAnswers() {
+    function submitQuiz() {
         let form = document.getElementById('quizForm');
-        let results = document.getElementById('results');
         let formData = new FormData(form);
-        let allQuestionsCorrect = true;
-        let incorrectyAnswered = [];
+        let quizData = {};
 
-        correctAnswers.forEach(function (question, index) {
-            let selectedOptions = [];
-            formData.getAll('question' + index).forEach(val => {
-                selectedOptions.push(parseInt(val));
-            });
-
-            let correct = question["Answers"].every(val => selectedOptions.includes(val)) &&
-                selectedOptions.every(val => question["Answers"].includes(val));
-
-            if (!correct) {                
-                incorrectyAnswered.push("<h4> Question " + (index+1) + " is incorrect </h3>");
-                allQuestionsCorrect = false;
+        formData.forEach(function(value, key) {
+            if (!quizData[key]) {
+                quizData[key] = [];
             }
+            quizData[key].push(value);
         });
-        results.innerHTML = "";
-        if (allQuestionsCorrect) {
-            results.innerHTML = "<h2>All correct..Good job!!</h2>"
-        } else {
-            incorrectyAnswered.forEach(val => results.innerHTML+=val);
-        }
+
+        // Convert the quizData object to JSON.
+        let jsonData = JSON.stringify(quizData);
+
+        // Make the AJAX request.
+        fetch('/evaluate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: jsonData
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Success:', data);
+            // You can handle the response data here.
+            alert('Quiz submitted successfully!');
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+            alert('An error occurred while submitting the quiz.');
+        });
     }
 });

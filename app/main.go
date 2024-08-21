@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"html/template"
 	"io"
+	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
@@ -22,9 +23,10 @@ import (
 )
 
 type Config struct {
-	S3Bucket   string `yaml:"s3bucket"`
-	Region     string `yaml:"region"`
-	ReadFromS3 bool   `yaml:"readFromS3"`
+	S3Bucket       string `yaml:"s3bucket"`
+	Region         string `yaml:"region"`
+	ReadFromS3     bool   `yaml:"readFromS3"`
+	CheckerService string `yaml:"checkerServiceUrl"`
 }
 
 type Quiz struct {
@@ -266,6 +268,94 @@ func reloadQuizzes() {
 	}
 }
 
+func evaluateHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var submittedAnswers map[string][]string
+
+	// Parse the incoming JSON data
+	err := json.NewDecoder(r.Body).Decode(&submittedAnswers)
+	if err != nil {
+		http.Error(w, "Invalid request payload", http.StatusBadRequest)
+		return
+	}
+
+	// Extract the quizId
+	quizId, ok := submittedAnswers["quizId"]
+	if !ok || len(quizId) == 0 {
+		http.Error(w, "Quiz ID is missing", http.StatusBadRequest)
+		return
+	}
+
+	// Prepare the payload for the external service
+	payload := map[string]interface{}{
+		"quizId":  quizId[0],
+		"answers": submittedAnswers,
+	}
+
+	// Use channels to handle asynchronous processing
+	resultChan := make(chan []byte)
+	errorChan := make(chan error)
+
+	go func() {
+		// Make the external API call for evaluation asynchronously
+		evaluationResults, err := evaluateViaExternalService(config.CheckerService, payload)
+		if err != nil {
+			errorChan <- err
+		} else {
+			resultChan <- evaluationResults
+		}
+	}()
+
+	// Wait for the result or error and respond accordingly
+	select {
+	case evaluationResults := <-resultChan:
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(evaluationResults)
+	case err := <-errorChan:
+		http.Error(w, fmt.Sprintf("Error evaluating quiz: %v", err), http.StatusInternalServerError)
+	}
+}
+
+func evaluateViaExternalService(apiURL string, payload map[string]interface{}) ([]byte, error) {
+	// Convert the payload to JSON
+	jsonData, err := json.Marshal(payload)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal payload: %v", err)
+	}
+
+	// Create a new HTTP POST request with the JSON data
+	req, err := http.NewRequest("POST", apiURL, bytes.NewBuffer(jsonData))
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %v", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	// Make the HTTP request to the external service
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to call external service: %v", err)
+	}
+	defer resp.Body.Close()
+
+	// Read the response body
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response: %v", err)
+	}
+
+	// Check for non-200 HTTP status codes
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("received non-200 status code: %d", resp.StatusCode)
+	}
+
+	return body, nil
+}
+
 func main() {
 	loadConfig()
 
@@ -274,6 +364,7 @@ func main() {
 	http.HandleFunc("/quiz/", quizHandler)
 	http.HandleFunc("/task/cpuintensive", cpuintensiveHandler)
 	http.HandleFunc("/server/config", serverConfigHandler)
+	http.HandleFunc("/evaluate", evaluateHandler)
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 
 	log.Println("Starting server on :8080")

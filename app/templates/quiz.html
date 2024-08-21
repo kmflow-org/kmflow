@@ -43,6 +43,7 @@
 <body>
     <h1>{{.Title}}</h1>
     <form id="quizForm">
+        <input type="hidden" name="quizId" value="{{.ID}}"/>
         {{range $index, $question := .Questions}}
         <div class="question">
             <div class="question-text">
@@ -75,7 +76,6 @@
         <button type="button" id="submitQuiz">Submit</button>
         <button type="button" onclick="window.location.href='/'">Home</button>
     </form>
-    <div id="correctAnswers" style="display:none;">{{ toJson .Questions }}</div>
     <div id="results"></div>
 </body>
 </html>

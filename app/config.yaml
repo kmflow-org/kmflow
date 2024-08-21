@@ -1,3 +1,4 @@
 readFromS3: false
 s3bucket: kmflow-org-quizzes
 region: us-west-2
+checkerServiceUrl: http://localhost:8090/check
