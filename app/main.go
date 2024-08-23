@@ -6,37 +6,35 @@ import (
 	"fmt"
 	"html/template"
 	"io"
-	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
 	"os"
 	"path/filepath"
-	"strconv"
-	"strings"
-	"sync"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/s3"
 	"gopkg.in/yaml.v2"
 )
 
 type Config struct {
-	S3Bucket       string `yaml:"s3bucket"`
-	Region         string `yaml:"region"`
-	ReadFromS3     bool   `yaml:"readFromS3"`
+	QuizUrl        string `yaml:"quizUrl"`
+	QuizListUrl    string `yaml:"quizListUrl"`
 	CheckerService string `yaml:"checkerServiceUrl"`
 }
 
 type Quiz struct {
-	ID        int        `yaml:"id"`
+	ID        string     `yaml:"id"`
 	Title     string     `yaml:"title"`
 	Questions []Question `yaml:"questions"`
 }
 
+type QuizSummary struct {
+	ID    string `json:"id"`
+	Title string `json:"title"`
+}
+
 type Question struct {
 	Text    string   `yaml:"text"`
+	ID      int      `yaml:"id"`
 	Type    string   `yaml:"type"`
 	Options []string `yaml:"options"`
 	Answers []int    `yaml:"answers"`
@@ -45,8 +43,6 @@ type Question struct {
 
 var config Config
 var quizzes []Quiz
-var tmpl *template.Template
-var mutex sync.Mutex
 
 // Custom function to add two integers
 func add(a, b int) int {
@@ -64,87 +60,51 @@ func loadConfig() {
 	}
 }
 
-func loadQuizzesFromS3() {
-	sess, err := session.NewSession(&aws.Config{
-		Region: aws.String(config.Region)},
-	)
+func fetchQuizzesFromExternalService() ([]QuizSummary, error) {
+	resp, err := http.Get(config.QuizListUrl)
 	if err != nil {
-		log.Fatalf("Failed to create AWS session: %v", err)
+		return nil, fmt.Errorf("failed to fetch quizzes: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("received non-200 response code: %d", resp.StatusCode)
 	}
 
-	svc := s3.New(sess)
-	input := &s3.ListObjectsV2Input{
-		Bucket: aws.String(config.S3Bucket),
-	}
-
-	result, err := svc.ListObjectsV2(input)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		log.Fatalf("Unable to list items in bucket %q, %v", config.S3Bucket, err)
+		return nil, fmt.Errorf("failed to read response body: %v", err)
 	}
 
-	var newQuizzes []Quiz
-	for _, item := range result.Contents {
-		getObjectInput := &s3.GetObjectInput{
-			Bucket: aws.String(config.S3Bucket),
-			Key:    aws.String(*item.Key),
-		}
-		result, err := svc.GetObject(getObjectInput)
-		if err != nil {
-			log.Fatalf("Unable to download item %q, %v", *item.Key, err)
-		}
-
-		body, err := io.ReadAll(result.Body)
-		if err != nil {
-			log.Fatalf("Failed to read S3 object body: %v", err)
-		}
-
-		var quiz Quiz
-		err = yaml.Unmarshal(body, &quiz)
-		if err != nil {
-			log.Fatalf("Failed to unmarshal quiz YAML: %v", err)
-		}
-		newQuizzes = append(newQuizzes, quiz)
-	}
-	mutex.Lock()
-	quizzes = newQuizzes
-	mutex.Unlock()
-}
-
-func loadQuizzesFromFileSystem() {
-	files, err := os.ReadDir("./quizzes")
+	var summaries []QuizSummary
+	err = json.Unmarshal(body, &summaries)
 	if err != nil {
-		log.Fatalf("Failed to read quizzes directory: %v", err)
+		return nil, fmt.Errorf("failed to unmarshal JSON: %v", err)
 	}
 
-	var newQuizzes []Quiz
-	for _, file := range files {
-		filePath := filepath.Join("./quizzes", file.Name())
-		data, err := os.ReadFile(filePath)
-		if err != nil {
-			log.Fatalf("Failed to read quiz file %s: %v", filePath, err)
-		}
-
-		var quiz Quiz
-		err = yaml.Unmarshal(data, &quiz)
-		if err != nil {
-			log.Fatalf("Failed to unmarshal quiz YAML: %v", err)
-		}
-		newQuizzes = append(newQuizzes, quiz)
-	}
-	mutex.Lock()
-	quizzes = newQuizzes
-	mutex.Unlock()
+	return summaries, nil
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
-	reloadQuizzes()
-	tmpl := template.Must(template.New("index.html").Funcs(template.FuncMap{
-		"add": add,
-	}).ParseFiles("templates/index.html"))
-	err := tmpl.Execute(w, quizzes)
+	summaries, err := fetchQuizzesFromExternalService()
 	if err != nil {
-		http.Error(w, "Failed to render template", http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("Failed to load quizzes: %v", err), http.StatusInternalServerError)
+		return
 	}
+
+	tmplPath := filepath.Join("templates", "index.html")
+	tmpl, err := template.ParseFiles(tmplPath)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to parse template: %v", err), http.StatusInternalServerError)
+		return
+	}
+
+	err = tmpl.Execute(w, summaries)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Failed to execute template: %v", err), http.StatusInternalServerError)
+		return
+	}
+
 }
 
 func healthCheckHandler(w http.ResponseWriter, r *http.Request) {
@@ -163,39 +123,55 @@ func toJson(v interface{}) (string, error) {
 }
 
 func quizHandler(w http.ResponseWriter, r *http.Request) {
-	id := strings.TrimPrefix(r.URL.Path, "/quiz/")
-	quizID, err := strconv.Atoi(id)
+	// Extract quiz ID from the URL path
+	quizID := r.URL.Path[len("/quiz/"):]
+
+	// Fetch quiz data from the external service
+	quiz, err := fetchQuizFromExternalService(quizID)
 	if err != nil {
-		http.Error(w, "Invalid quiz ID", http.StatusBadRequest)
+		http.Error(w, fmt.Sprintf("Failed to load quiz: %v", err), http.StatusInternalServerError)
 		return
 	}
 
-	var selectedQuiz Quiz
-	for _, quiz := range quizzes {
-		if quiz.ID == quizID {
-			selectedQuiz = quiz
-			break
-		}
-	}
-
-	if selectedQuiz.ID == 0 {
-		http.Error(w, "Quiz not found", http.StatusNotFound)
-		return
-	}
-
+	// Load the quiz template
 	tmpl := template.Must(template.New("quiz.html").Funcs(template.FuncMap{
 		"toJson": toJson,
 		"add":    add,
 	}).ParseFiles("templates/quiz.html"))
 
-	var buf bytes.Buffer
-	//err = tmpl.Execute(&buf, selectedQuiz)
-	tmpl.Execute(&buf, selectedQuiz)
+	// Render the template with the quiz data
+	err = tmpl.Execute(w, quiz)
 	if err != nil {
-		http.Error(w, "Failed to render template", http.StatusInternalServerError)
+		http.Error(w, fmt.Sprintf("Failed to execute template: %v", err), http.StatusInternalServerError)
 		return
 	}
-	buf.WriteTo(w)
+}
+
+func fetchQuizFromExternalService(quizID string) (*Quiz, error) {
+	url := fmt.Sprintf("%s%s", config.QuizUrl, quizID)
+
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch quiz from external service: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("received non-200 response code: %d", resp.StatusCode)
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response body: %v", err)
+	}
+
+	var quiz Quiz
+	err = yaml.Unmarshal(body, &quiz)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal YAML: %v", err)
+	}
+
+	return &quiz, nil
 }
 
 // isPrime checks if a number is prime.
@@ -260,14 +236,6 @@ func serverConfigHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "\nConfig File:\n%s\n", configData)
 }
 
-func reloadQuizzes() {
-	if config.ReadFromS3 {
-		loadQuizzesFromS3()
-	} else {
-		loadQuizzesFromFileSystem()
-	}
-}
-
 func evaluateHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -290,6 +258,7 @@ func evaluateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	delete(submittedAnswers, "quizId")
 	// Prepare the payload for the external service
 	payload := map[string]interface{}{
 		"quizId":  quizId[0],
@@ -343,7 +312,7 @@ func evaluateViaExternalService(apiURL string, payload map[string]interface{}) (
 	defer resp.Body.Close()
 
 	// Read the response body
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read response: %v", err)
 	}

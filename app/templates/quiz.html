@@ -58,14 +58,14 @@
                 {{if eq $question.Type "single"}}
                     {{range $i, $option := $question.Options}}
                     <label>
-                        <input type="radio" name="question{{$index}}" value="{{$i}}">
+                        <input type="radio" name="question-{{$question.ID}}" value="{{$i}}">
                         {{ $option }}
                     </label><br>
                     {{end}}
                 {{else if eq $question.Type "multiple"}}
                     {{range $i, $option := $question.Options}}
                     <label>
-                        <input type="checkbox" name="question{{$index}}" value="{{$i}}">
+                        <input type="checkbox" name="question-{{$question.ID}}" value="{{$i}}">
                         {{ $option }}
                     </label><br>
                     {{end}}

@@ -30,9 +30,11 @@ document.addEventListener("DOMContentLoaded", function () {
         })
         .then(response => response.json())
         .then(data => {
-            console.log('Success:', data);
-            // You can handle the response data here.
-            alert('Quiz submitted successfully!');
+            let results = document.getElementById("results");
+            results.innerHTML="";
+            data.forEach((result)=>{
+                results.innerHTML+="<h3>Question: "+result["questionId"] + " correct: "+ result["correct"]+"</h3><br/>";
+            });
         })
         .catch((error) => {
             console.error('Error:', error);
