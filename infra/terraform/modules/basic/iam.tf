@@ -38,8 +38,6 @@ resource "aws_iam_role_policy" "s3_access" {
           "s3:GetObjectAcl"
         ]
         Resource = [
-          "${aws_s3_bucket.artifacts.arn}",
-          "${aws_s3_bucket.artifacts.arn}/*",
           "${aws_s3_bucket.quizzes.arn}",
           "${aws_s3_bucket.quizzes.arn}/*",
         ]
