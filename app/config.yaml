@@ -1,3 +1,0 @@
-quizListUrl: http://localhost:8081/quizzes
-quizUrl: http://localhost:8081/quiz/
-checkerServiceUrl: http://localhost:8082/check
