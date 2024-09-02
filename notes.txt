@@ -1,8 +1,7 @@
 eksctl create cluster \
 --name kmflow-dev \
 --region us-west-2 \
---vpc-private-subnets subnet-0d7c4223dfd8add3d,subnet-04a24601a34efdffb,subnet-08990f5f5b7bb3ab3 \
---vpc-public-subnets subnet-0883edb99f79a5530,subnet-0421c525dcfaa6421,subnet-0b87bfff1b3c96d34 \
+--vpc-private-subnets subnet-04394bbe524f5d9b3,subnet-073ce3a472be191dd,subnet-002b5f24e725beddf \
 --nodegroup-name worker-nodes \
 --node-type t2.medium \
 --nodes 3 \

@@ -22,7 +22,9 @@ resource "aws_subnet" "public" {
     Name = "${var.vpc_name}-pub-${element(var.availability_zones, count.index)}"
     type = "public"
     env = var.env
+    "kubernetes.io/role/elb" = "1"
   }
+  
 }
 
 resource "aws_subnet" "private" {
@@ -34,6 +36,7 @@ resource "aws_subnet" "private" {
     Name = "${var.vpc_name}-pvt-${element(var.availability_zones, count.index)}"
     type = "private"
     env = var.env
+    "kubernetes.io/role/internal-elb" = "1"
   }
 }
 
