@@ -3,6 +3,13 @@ kind: Application
 metadata:
   name: quizchecker
   namespace: argocd
+  annotations:
+    argocd-image-updater.argoproj.io/image-list: >
+      quizchecker=533675705859.dkr.ecr.us-west-2.amazonaws.com/quizchecker
+    argocd-image-updater.argoproj.io/quizchecker.helm.image-name: image.repository 
+    argocd-image-updater.argoproj.io/quizchecker.helm.image-tag: image.tag
+    argocd-image-updater.argoproj.io/quizchecker.update-strategy: digest 
+    argocd-image-updater.argoproj.io/write-back-method: git 
   finalizers:
   - resources-finalizer.argocd.argoproj.io
 spec:
