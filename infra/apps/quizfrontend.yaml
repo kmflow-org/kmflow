@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: quizfrontend
+  namespace: argocd
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default  # Application belongs to the default project
+  source:
+    repoURL: https://github.com/kmflow-org/quizfrontend.git
+    targetRevision: main
+    path: helm
+    helm:
+      releaseName: quizfrontend
+      values: |
+        image:
+          tag: v1
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: quizfrontend
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
+
