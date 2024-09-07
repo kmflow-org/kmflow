@@ -7,7 +7,7 @@ spec:
   project: default  # Application belongs to the default project
   source:
     repoURL: https://github.com/kmflow-org/quizchecker.git
-    targetRevision: HEAD
+    targetRevision: main
     path: helm
     helm:
       releaseName: quizchecker
