@@ -1,0 +1,16 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: quizchecker
+spec:
+  project: default  # Application belongs to the default project
+  source:
+    repoURL: https://github.com/kmflow-org/kmflow.git
+    targetRevision: main
+    path: infra/apps
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    syncOptions:
+    - CreateNamespace=true
