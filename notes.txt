@@ -1,11 +1,11 @@
-eksctl create cluster \                                                           
---name kmflow-dev \                  
---region us-west-2 \        
+eksctl create cluster \
+--name kmflow-dev \
+--region us-west-2 \
 --vpc-private-subnets subnet-068dfa366a6a00e03,subnet-03dbb78ad5ff1bd27,subnet-08d8cf6242a4068c0 \
---nodegroup-name worker-nodes \           
+--nodegroup-name worker-nodes \
 --node-type t2.medium \
---nodes 3 \                                                                             
---nodes-max 5 \                                         
+--nodes 3 \
+--nodes-max 5 \
 --node-private-networking \
 --managed \
 --profile kmflowdev \
@@ -17,8 +17,27 @@ helm repo add argo https://argoproj.github.io/argo-helm
 helm install argocd argo/argo-cd -n argocd
 helm install argocd-image-updater argo/argocd-image-updater -n argocd
 helm show values argo/argocd-image-updater | less
+helm pull argo/argocd-image-updater --version 0.11.0
 
-eksctl create iamserviceaccount \                                                 
+helm repo add eks https://aws.github.io/eks-charts
+helm repo update eks
+helm search repo eks/aws-load-balancer-controller --versions
+helm pull eks/aws-load-balancer-controller --version 1.8.2
+
+https://docs.aws.amazon.com/eks/latest/userguide/lbc-helm.html
+
+curl -O https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.7.2/docs/install/iam_policy.json
+
+eksctl create iamserviceaccount \
+--cluster=my-cluster \
+--namespace=kube-system \
+--name=aws-load-balancer-controller \
+--role-name AmazonEKSLoadBalancerControllerRole \
+--attach-policy-arn=arn:aws:iam::111122223333:policy/AWSLoadBalancerControllerIAMPolicy \
+--approve
+
+
+eksctl create iamserviceaccount \
 --name argocd-image-updater \
 --namespace argocd \
 --cluster kmflow-dev \
@@ -27,12 +46,12 @@ eksctl create iamserviceaccount \
 --override-existing-serviceaccounts \
 --approve --profile kmflowdev --region us-west-2
 
-eksctl delete iamserviceaccount \                                                 
+eksctl delete iamserviceaccount \
 --name argocd-image-updater \
 --namespace argocd \
 --cluster kmflow-dev --profile kmflowdev --region us-west-2
 
-kubectl create secret generic github-creds \                                      
+kubectl create secret generic github-creds \
 --from-literal=username=vkchalam \
 --from-literal=password= \
 -n argocd
