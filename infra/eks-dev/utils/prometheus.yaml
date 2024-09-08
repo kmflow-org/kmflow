@@ -1,17 +1,25 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: prometheus
+  name: prometheus-operator
   namespace: argocd
 spec:
   project: default
   source:
     repoURL: https://prometheus-community.github.io/helm-charts
-    targetRevision: 23.2.0  # Use the appropriate version of the Helm chart
-    chart: prometheus
+    targetRevision: 63.2.0  # Prometheus Operator Helm Chart version (adjust as necessary)
+    chart: kube-prometheus-stack
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
   syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
     syncOptions:
-      - CreateNamespace=true
+      - CreateNamespace=true  # Automatically create the monitoring namespace if it doesn't exist
+  helm:
+    values: |
+      prometheus:
+        prometheusSpec:
+          serviceMonitorSelectorNilUsesHelmValues: false
