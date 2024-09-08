@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: app-of-apps
+  namespace: argocd
+spec:
+  project: default  # Application belongs to the default project
+  source:
+    repoURL: https://github.com/kmflow-org/kmflow.git
+    targetRevision: main
+    path: infra/eks-dev
+    directory:
+      recurse: true
+  destination:
+    server: https://kubernetes.default.svc
+  syncPolicy:
+    automated:
+      prune: true
