@@ -31,7 +31,7 @@ spec:
           scripts:
             ecr-kmflow-dev.sh: |
               #!/bin/sh
-              aws ecr \
+              HOME=/tmp aws ecr \
                 --region us-west-2 \
                 get-authorization-token \
                 --output text \
