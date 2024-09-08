@@ -1,0 +1,32 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: quizchecker
+  namespace: argocd
+  annotations:
+    argocd-image-updater.argoproj.io/image-list: >
+      quizchecker=533675705859.dkr.ecr.us-west-2.amazonaws.com/quizchecker:latest
+    argocd-image-updater.argoproj.io/quizchecker.helm.image-name: image.repository 
+    argocd-image-updater.argoproj.io/quizchecker.helm.image-tag: image.tag
+    argocd-image-updater.argoproj.io/quizchecker.update-strategy: digest 
+    argocd-image-updater.argoproj.io/write-back-method: git:secret:argocd/github-creds
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default  # Application belongs to the default project
+  source:
+    repoURL: https://github.com/kmflow-org/quizchecker.git
+    targetRevision: main
+    path: helm
+    helm:
+      releaseName: quizchecker
+      values: |
+        image:
+          tag: v1.0.1
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: quizchecker
+  syncPolicy:
+    syncOptions:
+    - CreateNamespace=true
+
