@@ -34,8 +34,7 @@ spec:
                 --region us-west-2 \
                 get-authorization-token \
                 --output text \
-                --query 'authorizationData[].authorizationToken' |
-                base64 -d
+                --query 'authorizationData[].authorizationToken' | base64 -d
         serviceAccount:
           name: argocd-image-updater
         podSecurityContext:
