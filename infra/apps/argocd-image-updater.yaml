@@ -1,0 +1,48 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: argocd-image-updater
+  namespace: argocd
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default  # Application belongs to the default project
+  source:
+    repoURL: https://argoproj.github.io/argo-helm
+    targetRevision: 0.11.0
+    chart: argocd-image-updater
+    helm:
+      releaseName: argocd-image-updater
+      values: |
+        config:
+          registries:
+            - name: ecr-kmflow-dev
+              api_url: 533675705859.dkr.ecr.us-west-2.amazonaws.com
+              credentials: ext:/scripts/ecr-kmflow-dev.sh
+              credsexpire: 10h
+              insecure: false
+              ping: true
+              prefix: 533675705859.dkr.ecr.us-west-2.amazonaws.com/quizchecker
+          authScripts:
+            enabled: true
+            scripts:
+              ecr-kmflow-dev.sh: |
+                #!/bin/sh
+                aws ecr \
+                  --region us-west-2 \
+                  get-authorization-token \
+                  --output text \
+                  --query 'authorizationData[].authorizationToken' |
+                  base64 -d
+          serviceAccount:
+            name: argocd-image-updater
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
+
