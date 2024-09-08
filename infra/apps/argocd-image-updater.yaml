@@ -22,6 +22,7 @@ spec:
               api_url: https://533675705859.dkr.ecr.us-west-2.amazonaws.com
               credentials: ext:/scripts/ecr-kmflow-dev.sh
               credsexpire: 10h
+              default: true
               insecure: false
               ping: true
               prefix: 533675705859.dkr.ecr.us-west-2.amazonaws.com
