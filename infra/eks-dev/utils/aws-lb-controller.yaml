@@ -24,5 +24,3 @@ spec:
   syncPolicy:
     syncOptions:
     - CreateNamespace=true
-
-helm pull --version 1.8.2 --repo https://aws.github.io/eks-charts eks/aws-load-balancer-controller

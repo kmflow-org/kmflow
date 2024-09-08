@@ -29,11 +29,13 @@ https://docs.aws.amazon.com/eks/latest/userguide/lbc-helm.html
 curl -O https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.7.2/docs/install/iam_policy.json
 
 eksctl create iamserviceaccount \
---cluster=kmflow-dev \
---namespace=kube-system \
---name=aws-load-balancer-controller \
+--region us-west-2 \
+--profile kmflowdev \
+--cluster kmflow-dev \
+--namespace kube-system \
+--name aws-load-balancer-controller \
 --role-name AmazonEKSLoadBalancerControllerRole \
---attach-policy-arn=arn:aws:iam::533675705859:policy/aws-lb-controller-policy \
+--attach-policy-arn arn:aws:iam::533675705859:policy/aws-lb-controller-policy \
 --approve
 
 
