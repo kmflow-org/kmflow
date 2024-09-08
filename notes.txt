@@ -3,7 +3,7 @@ eksctl create cluster \
 --region us-west-2 \
 --vpc-private-subnets subnet-068dfa366a6a00e03,subnet-03dbb78ad5ff1bd27,subnet-08d8cf6242a4068c0 \
 --nodegroup-name worker-nodes \
---node-type t2.medium \
+--node-type t2.large \
 --nodes 3 \
 --nodes-max 5 \
 --node-private-networking \
@@ -58,3 +58,12 @@ kubectl create secret generic github-creds \
 --from-literal=password= \
 -n argocd
 
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm install prometheus bitnami/kube-prometheus \
+--version 8.2.2 \
+--values values.yaml \
+--wait
+
+helm repo add grafana https://grafana.github.io/helm-charts
+helm repo update
+helm install my-release grafana/grafana
