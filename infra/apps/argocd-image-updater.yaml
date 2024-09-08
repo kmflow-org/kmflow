@@ -19,12 +19,12 @@ spec:
           logLevel: debug
           registries:
             - name: ecr-kmflow-dev
-              api_url: 533675705859.dkr.ecr.us-west-2.amazonaws.com
+              api_url: https://533675705859.dkr.ecr.us-west-2.amazonaws.com
               credentials: ext:/scripts/ecr-kmflow-dev.sh
               credsexpire: 10h
               insecure: false
               ping: true
-              prefix: 533675705859.dkr.ecr.us-west-2.amazonaws.com/quizchecker
+              prefix: 533675705859.dkr.ecr.us-west-2.amazonaws.com
         authScripts:
           enabled: true
           scripts:
