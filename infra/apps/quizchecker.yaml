@@ -9,7 +9,7 @@ metadata:
     argocd-image-updater.argoproj.io/quizchecker.helm.image-name: image.repository 
     argocd-image-updater.argoproj.io/quizchecker.helm.image-tag: image.tag
     argocd-image-updater.argoproj.io/quizchecker.update-strategy: digest 
-    argocd-image-updater.argoproj.io/write-back-method: git 
+    argocd-image-updater.argoproj.io/write-back-method: git:secret:argocd/github-creds
   finalizers:
   - resources-finalizer.argocd.argoproj.io
 spec:
