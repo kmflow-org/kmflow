@@ -1,0 +1,26 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: aws-lb-controller
+  namespace: argocd
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default  # Application belongs to the default project
+  source:
+    repoURL: https://aws.github.io/eks-charts
+    targetRevision: 1.8.2
+    chart: aws-load-balancer-controller
+    helm:
+      releaseName: aws-lb-controller
+      values: |
+        clusterName: kmflow-dev
+        serviceAccount:
+          create: false
+          name: aws-load-balancer-controller
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: kube-system
+  syncPolicy:
+    syncOptions:
+    - CreateNamespace=true
