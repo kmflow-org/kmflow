@@ -15,6 +15,8 @@ spec:
       releaseName: argocd-image-updater
       values: |
         config:
+          applicationAPIKind: kubernetes
+          logLevel: debug
           registries:
             - name: ecr-kmflow-dev
               api_url: 533675705859.dkr.ecr.us-west-2.amazonaws.com
