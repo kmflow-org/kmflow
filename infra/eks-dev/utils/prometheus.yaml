@@ -15,13 +15,3 @@ spec:
   syncPolicy:
     syncOptions:
       - CreateNamespace=true
-  helm:
-    values: |
-      alertmanager:
-        enabled: false
-      server:
-        persistentVolume:
-          enabled: false
-      serviceAccount:
-        create: true
-        name: prometheus-server
