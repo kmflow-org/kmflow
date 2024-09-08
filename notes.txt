@@ -57,3 +57,4 @@ kubectl create secret generic github-creds \
 --from-literal=username=vkchalam \
 --from-literal=password= \
 -n argocd
+
