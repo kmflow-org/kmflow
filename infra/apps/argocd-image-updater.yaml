@@ -25,17 +25,17 @@ spec:
               insecure: false
               ping: true
               prefix: 533675705859.dkr.ecr.us-west-2.amazonaws.com/quizchecker
-          authScripts:
-            enabled: true
-            scripts:
-              ecr-kmflow-dev.sh: |
-                #!/bin/sh
-                aws ecr \
-                  --region us-west-2 \
-                  get-authorization-token \
-                  --output text \
-                  --query 'authorizationData[].authorizationToken' |
-                  base64 -d
+        authScripts:
+          enabled: true
+          scripts:
+            ecr-kmflow-dev.sh: |
+              #!/bin/sh
+              aws ecr \
+                --region us-west-2 \
+                get-authorization-token \
+                --output text \
+                --query 'authorizationData[].authorizationToken' |
+                base64 -d
           serviceAccount:
             name: argocd-image-updater
   destination:
