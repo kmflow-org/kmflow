@@ -1,0 +1,33 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kube-prometheus-stack
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://prometheus-community.github.io/helm-charts
+    targetRevision: 62.6.0  # Adjust to latest version as needed
+    chart: kube-prometheus-stack
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  syncPolicy:
+    automated:
+      prune: true
+    syncOptions:
+      - CreateNamespace=true  # Automatically create the namespace
+  helm:
+    values: |
+      alertmanager:
+        enabled: false  # Disable Alertmanager
+      grafana:
+        enabled: true   # Ensure Grafana is enabled
+        service:
+          type: ClusterIP
+      prometheus:
+        enabled: true   # Ensure Prometheus is enabled
+        service:
+          type: ClusterIP
+      nodeExporter:
+        enabled: false
