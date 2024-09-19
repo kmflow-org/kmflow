@@ -15,11 +15,11 @@ spec:
       releaseName: prometheus
       values: |
         kube-state-metrics:
-          enabled: false
+          enabled: true
         prometheus-pushgateway:
           enabled: false
         prometheus-node-exporter:
-          enabled: false
+          enabled: true
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
