@@ -15,7 +15,7 @@ spec:
       releaseName: metrics-server
   destination:
     server: https://kubernetes.default.svc
-    namespace: kube-system
+    namespace: monitoring
   syncPolicy:
     syncOptions:
     - CreateNamespace=true
