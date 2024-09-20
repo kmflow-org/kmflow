@@ -25,7 +25,7 @@ spec:
             groups:
               - name: quizengine
                 rules:
-                  - alert: Replicas going down
+                  - alert: Replica mismatch
                     expr: kube_deployment_spec_replicas{deployment="quizchecker"} > kube_deployment_status_replicas{deployment="quizchecker"}
                     labels:
                       severity: critical
