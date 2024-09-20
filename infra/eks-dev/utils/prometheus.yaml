@@ -25,15 +25,15 @@ spec:
             groups:
             - name: quizengine
               rules:
-              - alert: Replica mismatch
-                expr: kube_deployment_spec_replicas{deployment="quizchecker"} > kube_deployment_status_replicas{deployment="quizchecker"}
+              - alert: TooManyRestarts
+                expr: kube_pod_container_status_restarts_total{container="quizchecker"} > 1
                 labels:
                   severity: critical
                   team: sre
                 for: 5s
                 annotations:
-                  summary: "Fewer replicas than in spec"
-                  description: "We are running quizchecker with lesser replicas than needed"
+                  summary: "Too many restarts"
+                  description: "Quizchecker seems to be restarting too much"
         alertmanager:
           enabled: true
           config:
