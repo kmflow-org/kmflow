@@ -21,19 +21,19 @@ spec:
         prometheus-node-exporter:
           enabled: true
         serverFiles:
-          alerting_rules.yaml:
+          alerting_rules.yml:
             groups:
-              - name: quizengine
-                rules:
-                  - alert: Replica mismatch
-                    expr: kube_deployment_spec_replicas{deployment="quizchecker"} > kube_deployment_status_replicas{deployment="quizchecker"}
-                    labels:
-                      severity: critical
-                      team: sre
-                    for: 5s
-                    annotations:
-                      summary: "Fewer replicas than in spec"
-                      description: "We are running quizchecker with lesser replicas than needed"
+            - name: quizengine
+              rules:
+              - alert: Replica mismatch
+                expr: kube_deployment_spec_replicas{deployment="quizchecker"} > kube_deployment_status_replicas{deployment="quizchecker"}
+                labels:
+                  severity: critical
+                  team: sre
+                for: 5s
+                annotations:
+                  summary: "Fewer replicas than in spec"
+                  description: "We are running quizchecker with lesser replicas than needed"
         alertmanager:
           enabled: true
           config:
