@@ -21,7 +21,7 @@ spec:
         prometheus-node-exporter:
           enabled: true
         serverFiles:
-          alert_rules.yaml:
+          alerting_rules.yaml:
             groups:
               - name: quizengine
                 rules:
