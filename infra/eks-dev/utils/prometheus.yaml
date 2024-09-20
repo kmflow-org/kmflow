@@ -40,12 +40,12 @@ spec:
             receivers:
               - name: default-receiver
                 slack_configs:
-                  - channel: '@quizengine'
+                  - channel: '#alerts'
                     send_resolved: true
                     text: |
                       {{.CommonAnnotations.summary}}
                       {{.CommonAnnotations.description}}
-                    api_url: 'https://hooks.slack.com/services/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'
+                    api_url: 'https://hooks.slack.com/services/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'
 
   destination:
     server: https://kubernetes.default.svc
