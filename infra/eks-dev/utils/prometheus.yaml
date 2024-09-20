@@ -39,13 +39,12 @@ spec:
           config:
             receivers:
               - name: default-receiver
-                slack_configs:
-                  - channel: '#alerts'
+                discord_configs:
+                  - webhook_url: 'https://discord.com/api/webhooks/1286834825096859658/gtFKiO6iGeIFbIRyQvosuaqxiiph3kzwTUa081kLlo_gnVtx-PXWbfcmMxCuLpWw2h7D'
                     send_resolved: true
-                    text: |
+                    message: |
                       {{.CommonAnnotations.summary}}
                       {{.CommonAnnotations.description}}
-                    api_url: 'https://hooks.slack.com/services/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'
 
   destination:
     server: https://kubernetes.default.svc
