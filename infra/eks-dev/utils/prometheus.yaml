@@ -45,7 +45,7 @@ spec:
                     text: |
                       {{.CommonAnnotations.summary}}
                       {{.CommonAnnotations.description}}
-                    api_url: 'https://hooks.slack.com/services/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'
+                    api_url: 'https://hooks.slack.com/services/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'
 
   destination:
     server: https://kubernetes.default.svc
