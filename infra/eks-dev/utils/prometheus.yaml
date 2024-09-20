@@ -20,6 +20,34 @@ spec:
           enabled: false
         prometheus-node-exporter:
           enabled: true
+        serverFiles:
+          alert_rules.yaml:
+            groups:
+              - name: quizengine
+                rules:
+                  - alert: Replicas going down
+                    expr: kube_deployment_spec_replicas{deployment="quizchecker"} > kube_deployment_status_replicas{deployment="quizchecker"}
+                    labels:
+                      severity: critical
+                      team: sre
+                    for: 5s
+                    annotations:
+                      summary: "Fewer replicas than in spec"
+                      description: "We are running quizchecker with lesser replicas than needed"
+                    
+        alertmanager:
+          enabled: true
+          config:
+            receivers:
+              - name: default-receiver
+                slack_configs:
+                  - channel: '#demo-alerts'
+                    send_resolved: true
+                    text: |
+                      {{.CommonAnnotations.summary}}
+                      {{.CommonAnnotations.description}}
+                    api_url: 'https://hooks.slack.com/services/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'
+
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
