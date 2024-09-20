@@ -34,7 +34,6 @@ spec:
                     annotations:
                       summary: "Fewer replicas than in spec"
                       description: "We are running quizchecker with lesser replicas than needed"
-                    
         alertmanager:
           enabled: true
           config:
