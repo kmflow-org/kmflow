@@ -40,7 +40,7 @@ spec:
             receivers:
               - name: default-receiver
                 slack_configs:
-                  - channel: '#demo-alerts'
+                  - channel: '@demo-alerts'
                     send_resolved: true
                     text: |
                       {{.CommonAnnotations.summary}}
