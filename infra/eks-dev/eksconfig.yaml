@@ -1,0 +1,43 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+
+metadata:
+  name: kmflow-dev
+  region: us-west-2
+  version: "1.29"
+
+vpc:
+  subnets:
+    private:
+      us-west-2a: { id: "subnet-068dfa366a6a00e03" }
+      us-west-2b: { id: "subnet-03dbb78ad5ff1bd27" }
+      us-west-2c: { id: "subnet-08d8cf6242a4068c0" }
+
+nodeGroups:
+  - name: worker-nodes
+    instanceType: t2.medium
+    desiredCapacity: 3
+    minSize: 3
+    maxSize: 5
+    privateNetworking: true
+
+addons:
+  - name: aws-ebs-csi-driver
+    version: latest
+
+iam:
+  withOIDC: true
+  serviceAccounts:
+    - metadata:
+        name: aws-load-balancer-controller
+        namespace: kube-system
+      roleName: "AmazonEKSLoadBalancerControllerRole"
+      attachPolicyARNs:
+        - arn:aws:iam::533675705859:policy/aws-lb-controller-policy
+    - metadata:
+        name: argocd-image-updater
+        namespace: argocd
+      roleName: "Argocd-image-updater"
+      attachPolicyARNs:
+        - arn:aws:iam::533675705859:policy/argo-image-updater-policy
+

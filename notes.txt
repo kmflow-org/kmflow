@@ -1,3 +1,22 @@
+==============
+Manual Steps:
+==============
+
+eksctl create cluster -f eksconfig.yaml
+
+helm install argocd argo/argo-cd -n argocd
+
+kubectl create secret generic github-creds \
+--from-literal=username=<github username> \
+--from-literal=password=<github personal access token here> \
+-n argocd
+
+kubectl create -f app-of-apps.yaml
+
+=============================
+Previously we did:
+=============================
+
 eksctl create cluster \
 --name kmflow-dev \
 --region us-west-2 \
@@ -52,18 +71,3 @@ eksctl delete iamserviceaccount \
 --name argocd-image-updater \
 --namespace argocd \
 --cluster kmflow-dev --profile kmflowdev --region us-west-2
-
-kubectl create secret generic github-creds \
---from-literal=username=vkchalam \
---from-literal=password= \
--n argocd
-
-helm repo add bitnami https://charts.bitnami.com/bitnami
-helm install prometheus bitnami/kube-prometheus \
---version 8.2.2 \
---values values.yaml \
---wait
-
-helm repo add grafana https://grafana.github.io/helm-charts
-helm repo update
-helm install my-release grafana/grafana
