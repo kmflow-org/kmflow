@@ -40,10 +40,10 @@ spec:
             receivers:
               - name: default-receiver
                 discord_configs:
-                  - webhook_url: 'https://discord.com/api/webhooks/1286834825096859658/gtFKiO6iGeIFbIRyQvosuaqxiiph3kzwTUa081kLlo_gnVtx-PXWbfcmMxCuLpWw2h7D'
+                  - webhook_url: 'https://discord.com/api/webhooks/1286886701838499933/yw-QtJqyX_FaNWi5AdrpXz6_9_FLxBcwQRjMbzhqY6_lHiB07opwG1Ei5nfEt0JEIr2N'
                     send_resolved: true
+                    title: {{.CommonAnnotations.summary}} 
                     message: |
-                      {{.CommonAnnotations.summary}}
                       {{.CommonAnnotations.description}}
 
   destination:
