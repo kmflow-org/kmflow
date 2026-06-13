@@ -108,20 +108,14 @@ data "aws_ami" "amazon_linux" {
   }
 }
 
-#  User Data
-data "template_file" "user_data" {
-  template = file("${path.module}/user_data.sh.tpl")
-  vars = {
-    release_version = var.release_version
-  }
-}
-
 # Launch Template
 resource "aws_launch_template" "quizengine-lt" {
   name   = "${local.name_prefix}-lt"
   image_id      = data.aws_ami.amazon_linux.id
   instance_type = var.instance_type
-  user_data     = base64encode(data.template_file.user_data.rendered)
+  user_data     = base64encode(templatefile("${path.module}/user_data.sh.tpl", {
+    release_version = var.release_version
+  }))
   vpc_security_group_ids = [aws_security_group.instance_sg.id]
 
   iam_instance_profile {
